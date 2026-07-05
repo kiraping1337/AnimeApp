@@ -1,0 +1,149 @@
+<div class="home">
+  <section class="section">
+    <h2 class="section__title">Новые озвучки</h2>
+
+    @if (isLoadingUpdates) {
+      <div class="skeleton-row">
+        @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+    } @else {
+      <div class="carousel">
+        <button class="carousel__btn" (click)="prevCarousel()" [disabled]="!canCarouselPrev">
+          ‹
+        </button>
+
+        <div class="carousel__viewport" #carouselViewport>
+          <div class="carousel__track" [style.transform]="'translateX(' + carouselOffset + ')'">
+            @for (item of updates; track item.link) {
+              <div class="carousel__card" (click)="goToAnime(item.link)">
+                <div class="carousel__img-wrap">
+                  <img [src]="item.image" [alt]="item.title" class="carousel__img" loading="lazy" />
+                  <div class="carousel__overlay">
+                    <span class="carousel__episode">Серия {{ item.episode }}</span>
+                  </div>
+                </div>
+                <div class="carousel__info">
+                  <span class="carousel__title">{{ item.title }}</span>
+                  <span class="carousel__time">{{ item.time }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <button class="carousel__btn" (click)="nextCarousel()" [disabled]="!canCarouselNext">
+          ›
+        </button>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-bar__fill" [style.width.%]="carouselProgress"></div>
+      </div>
+    }
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Расписание</h2>
+
+    @if (isLoadingSchedule) {
+      <div>
+        @for (i of [1, 2, 3, 4, 5, 6, 7]; track i) {
+          <div class="skeleton-day-row"></div>
+        }
+      </div>
+    } @else if (schedule) {
+      <div class="schedule">
+        @for (day of days; track day) {
+          <div class="schedule__day" [class.schedule__day--today]="isToday(day)">
+            <div class="schedule__day-header" (click)="toggleDay(day)">
+              <div class="schedule__day-name-wrap">
+                <span class="schedule__day-name">{{ day }}</span>
+              </div>
+              <div class="schedule__day-right">
+                @if (!isToday(day)) {
+                  <span class="schedule__day-date">{{ getDateForDay(day) }}</span>
+                } @else {
+                  <span class="schedule__today-badge">Сегодня</span>
+                }
+                <span class="schedule__day-count">{{ getScheduleForDay(day).length }} аниме</span>
+                <span
+                  class="schedule__day-arrow"
+                  [class.schedule__day-arrow--open]="isDayExpanded(day)"
+                  >›</span
+                >
+              </div>
+            </div>
+
+            <div class="schedule__items" [class.schedule__items--open]="isDayExpanded(day)">
+              <div class="schedule__items-inner">
+                @for (item of getScheduleForDay(day); track item.link) {
+                  <div class="schedule__item" (click)="goToAnime(item.link)">
+                    <img
+                      [src]="item.image"
+                      [alt]="item.title"
+                      class="schedule__item-img"
+                      loading="lazy"
+                    />
+                    <div class="schedule__item-info">
+                      <span class="schedule__item-title">{{ item.title }}</span>
+                      <span class="schedule__item-meta"
+                        >{{ item.episode }} эп. · {{ item.time }}</span
+                      >
+                    </div>
+                  </div>
+                } @empty {
+                  <span class="schedule__empty">Нет аниме</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="section">
+    <h2 class="section__title">Аниме сезона</h2>
+
+    @if (isLoadingSeason) {
+      <div class="skeleton-season-row">
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="skeleton-season-card"></div>
+        }
+      </div>
+    } @else {
+      <div class="season">
+        <button class="season__btn" (click)="prevSeason()" [disabled]="!canSeasonPrev">‹</button>
+
+        <div class="season__viewport" #seasonViewport>
+          <div class="season__track" [style.transform]="'translateX(' + seasonOffset + ')'">
+            @for (anime of seasonAnime; track anime.link) {
+              <div class="season__card" (click)="goToAnime(anime.link)">
+                <div class="season__img-wrap">
+                  <img [src]="anime.image" [alt]="anime.title" class="season__img" loading="lazy" />
+                  @if (anime.score) {
+                    <span class="season__score">{{ anime.score }}</span>
+                  }
+                </div>
+                <div class="season__info">
+                  <span class="season__title">{{ anime.title }}</span>
+                  @if (anime.other_title) {
+                    <span class="season__other">{{ anime.other_title }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <button class="season__btn" (click)="nextSeason()" [disabled]="!canSeasonNext">›</button>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-bar__fill" [style.width.%]="seasonProgress"></div>
+      </div>
+    }
+  </section>
+</div>

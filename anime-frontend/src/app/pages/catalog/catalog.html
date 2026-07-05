@@ -1,0 +1,123 @@
+<div class="catalog">
+  <h2 class="section__title">Каталог аниме</h2>
+
+  @if (filters) {
+    <div class="catalog__filters">
+      <div class="filter-group">
+        <label class="filter-label">Статус</label>
+        <select class="filter-select" [(ngModel)]="selectedStatus">
+          <option value="">Все</option>
+          @for (key of filterKeys(filters.statuses); track key) {
+            <option [value]="key">{{ filters.statuses[key] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Тип</label>
+        <select class="filter-select" [(ngModel)]="selectedType">
+          <option value="">Все</option>
+          @for (key of filterKeys(filters.types); track key) {
+            <option [value]="key">{{ filters.types[key] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Жанр</label>
+        <select class="filter-select" [(ngModel)]="selectedGenre">
+          <option value="">Все</option>
+          @for (key of filterKeys(filters.genres); track key) {
+            <option [value]="key">{{ filters.genres[key] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Сортировка</label>
+        <select class="filter-select" [(ngModel)]="selectedSort">
+          @for (key of filterKeys(filters.sorts); track key) {
+            <option [value]="key">{{ filters.sorts[key] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="filter-btn filter-btn--apply" (click)="applyFilters()">Применить</button>
+        <button class="filter-btn filter-btn--reset" (click)="resetFilters()">Сбросить</button>
+      </div>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="catalog__grid">
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]; track i) {
+        <div class="catalog__skeleton-card"></div>
+      }
+    </div>
+  } @else {
+    <div class="catalog__grid">
+      @for (anime of items; track anime.shikimori_id) {
+        <div
+          class="catalog__card"
+          [class.catalog__card--resolving]="resolvingId === anime.shikimori_id"
+          (click)="onCardClick(anime)"
+        >
+          @if (resolvingId === anime.shikimori_id) {
+            <div class="catalog__card-overlay">
+              <div class="catalog__card-spinner"></div>
+            </div>
+          }
+
+          <div class="catalog__img-wrap">
+            @if (anime.poster) {
+              <img
+                [src]="anime.poster"
+                [alt]="anime.title ?? ''"
+                class="catalog__img"
+                loading="lazy"
+              />
+            } @else {
+              <div class="catalog__img catalog__img--placeholder"></div>
+            }
+          </div>
+
+          <div class="catalog__info">
+            <span class="catalog__title">{{ anime.title }}</span>
+            @if (anime.original_title) {
+              <span class="catalog__original">{{ anime.original_title }}</span>
+            }
+            <div class="catalog__tags">
+              @if (anime.type) {
+                <span class="catalog__tag">{{ anime.type }}</span>
+              }
+              @if (anime.year) {
+                <span class="catalog__tag">{{ anime.year }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="catalog__pagination">
+      <button
+        class="catalog__page-btn"
+        [disabled]="hasPrev === false || isLoading"
+        (click)="prevPage()"
+      >
+        ← Назад
+      </button>
+
+      <span class="catalog__page-info">Страница {{ currentPage }}</span>
+
+      <button
+        class="catalog__page-btn"
+        [disabled]="hasNext === false || isLoading"
+        (click)="nextPage()"
+      >
+        Вперёд →
+      </button>
+    </div>
+  }
+</div>

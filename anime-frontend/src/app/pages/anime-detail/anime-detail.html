@@ -1,0 +1,195 @@
+<div class="detail">
+  @if (isLoadingInfo) {
+    <div class="detail__skeleton">
+      <div class="skeleton-poster"></div>
+      <div class="skeleton-info"></div>
+    </div>
+  } @else if (info) {
+    <div class="detail__hero">
+      <div class="detail__poster-wrap">
+        @if (info.image) {
+          <img [src]="info.image" [alt]="info.title ?? ''" class="detail__poster" />
+        }
+        @if (info.score) {
+          <div class="detail__score">{{ info.score }}</div>
+        }
+      </div>
+
+      <div class="detail__meta">
+        <h1 class="detail__title">{{ info.title }}</h1>
+
+        <div class="detail__tags">
+          @if (info.status) {
+            <span class="tag tag--status">{{ info.status }}</span>
+          }
+          @if (info.type) {
+            <span class="tag">{{ info.type }}</span>
+          }
+          @if (info.anime_season) {
+            <span class="tag">{{ info.anime_season }}</span>
+          }
+        </div>
+
+        @if (auth.isLoggedIn()) {
+          <div class="detail__actions">
+            <button class="action-btn" [class.active]="isFavorite" (click)="toggleFavorite()">
+              {{ isFavorite ? '★ В избранном' : '☆ В избранное' }}
+            </button>
+            <button class="action-btn" [class.active]="isWatched" (click)="toggleWatched()">
+              {{ isWatched ? '✓ Просмотрено' : 'Отметить просмотренным' }}
+            </button>
+          </div>
+        }
+
+        <div class="detail__props">
+          @if (info.episodes) {
+            <div class="detail__prop">
+              <span class="detail__prop-label">Эпизоды</span>
+              <span class="detail__prop-value">{{ info.episodes }}</span>
+            </div>
+          }
+          @if (info.duration) {
+            <div class="detail__prop">
+              <span class="detail__prop-label">Длительность</span>
+              <span class="detail__prop-value">{{ info.duration }}</span>
+            </div>
+          }
+          @if (info.studio) {
+            <div class="detail__prop">
+              <span class="detail__prop-label">Студия</span>
+              <span class="detail__prop-value">{{ info.studio }}</span>
+            </div>
+          }
+          @if (info.next_episode) {
+            <div class="detail__prop">
+              <span class="detail__prop-label">Следующий эпизод</span>
+              <span class="detail__prop-value detail__prop-value--accent">{{
+                info.next_episode
+              }}</span>
+            </div>
+          }
+        </div>
+
+        @if (info.genres && info.genres.length > 0) {
+          <div class="detail__genres">
+            @for (genre of info.genres; track genre) {
+              <span class="genre-tag">{{ genre }}</span>
+            }
+          </div>
+        }
+
+        @if (info.description) {
+          <p class="detail__description">{{ info.description }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="player">
+      <h2 class="player__title">Смотреть онлайн</h2>
+
+      @if (totalEpisodes && totalEpisodes > 0) {
+        <div class="player__section">
+          <span class="player__label">Серия</span>
+          <div class="player__episode-list">
+            @for (ep of episodesList; track ep) {
+              <button
+                class="player__ep-btn"
+                [class.active]="ep === selectedEpisode"
+                [disabled]="
+                  releasedEpisodesCount > 0 &&
+                  releasedEpisodesCount < 30 &&
+                  ep > releasedEpisodesCount
+                "
+                (click)="selectEpisode(ep)"
+              >
+                {{ ep }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (voiceGroups.length > 0) {
+        <div class="player__section">
+          <span class="player__label">Озвучка</span>
+          <div class="player__btn-list">
+            @for (group of voiceGroups; track group.label) {
+              <button
+                class="player__voice-btn"
+                [class.active]="group.label === selectedGroup?.label"
+                (click)="selectGroup(group)"
+              >
+                {{ group.label }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (selectedGroup && selectedGroup.voices.length > 1) {
+        <div class="player__section">
+          <span class="player__label">Плеер</span>
+          <div class="player__btn-list">
+            @for (voice of selectedGroup.voices; track voice.translation_id) {
+              <button
+                class="player__player-btn"
+                [class.active]="voice.translation_id === selectedVoice?.translation_id"
+                (click)="selectVoice(voice)"
+              >
+                {{ playerName(voice.player) }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="player__frame-wrap">
+        @if (isLoadingVoices) {
+          <div class="player__loading">
+            <div class="player__spinner"></div>
+            <span>Загрузка...</span>
+          </div>
+        } @else if (releasedEpisodesCount === 0) {
+          <div class="player__upcoming">
+            <svg
+              class="player__upcoming-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="80"
+              height="80"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M8 2v4" />
+              <path d="M16 2v4" />
+              <rect width="18" height="18" x="3" y="4" rx="2" />
+              <path d="M3 10h18" />
+              <path d="M8 14h.01" />
+              <path d="M12 14h.01" />
+              <path d="M16 14h.01" />
+              <path d="M8 18h.01" />
+              <path d="M12 18h.01" />
+              <path d="M16 18h.01" />
+            </svg>
+            <h3>Ещё не вышло в эфир</h3>
+            <p>
+              Для этого аниме пока нет вышедших серий. Добавьте тайтл в закладки, чтобы не
+              пропустить премьеру!
+            </p>
+          </div>
+        } @else if (streamUrl) {
+          <iframe
+            [src]="streamUrl"
+            class="player__frame"
+            allowfullscreen
+            allow="autoplay; fullscreen"
+            frameborder="0"
+          ></iframe>
+        }
+      </div>
+    </div>
+  }
+</div>

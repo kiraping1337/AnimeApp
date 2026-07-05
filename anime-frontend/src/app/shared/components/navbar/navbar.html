@@ -1,0 +1,91 @@
+<nav class="navbar">
+  <a routerLink="/" class="navbar__logo">
+    <svg
+      class="navbar__logo-svg"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.0"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M3 7V5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2" />
+      <path d="M6 4v17M18 4v17" />
+      <path d="M6 9h12M6 14h12" />
+    </svg>
+    <span class="navbar__logo-text">YoruGate</span>
+  </a>
+
+  <div class="navbar__search">
+    <input
+      type="text"
+      class="navbar__input"
+      placeholder="Поиск аниме..."
+      [(ngModel)]="query"
+      (input)="onInput()"
+      (blur)="closeDropdown()"
+    />
+
+    @if (isLoading) {
+      <div class="navbar__spinner"></div>
+    }
+
+    @if (isOpen && results.length > 0) {
+      <div class="navbar__dropdown">
+        @for (anime of results; track anime.id) {
+          <div class="navbar__dropdown-item" (mousedown)="goToAnime(anime.link)">
+            @if (anime.image) {
+              <img [src]="anime.image" [alt]="anime.title" class="navbar__dropdown-img" />
+            }
+            <div class="navbar__dropdown-info">
+              <span class="navbar__dropdown-title">{{ anime.title }}</span>
+              @if (anime.original_title) {
+                <span class="navbar__dropdown-original">{{ anime.original_title }}</span>
+              }
+            </div>
+            @if (anime.rating) {
+              <span class="navbar__dropdown-rating">{{ anime.rating }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="navbar__right">
+    <a routerLink="/catalog" class="navbar__link-item">Каталог</a>
+    @if (auth.isLoggedIn()) {
+      <a routerLink="/favorites" class="navbar__link-item">Избранное</a>
+      <a routerLink="/tierlists" class="navbar__link-item">Тирлисты</a>
+    }
+
+    <div class="navbar__profile" (click)="toggleProfileMenu()">
+      <svg
+        class="navbar__profile-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7" />
+      </svg>
+      <span>{{ auth.isLoggedIn() ? auth.username() : 'Войти' }}</span>
+
+      @if (isProfileMenuOpen && auth.isLoggedIn()) {
+        <div class="navbar__profile-menu" (click)="$event.stopPropagation()">
+          <span class="navbar__profile-menu-item" (click)="logout()">Выйти</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (isAuthModalOpen) {
+    <app-auth-modal (close)="closeAuthModal()" />
+  }
+</nav>

@@ -1,0 +1,56 @@
+<div class="tierlists">
+  <div class="tierlists__header">
+    <h2 class="section__title">Мои тирлисты</h2>
+    <a routerLink="/tierlists/new" class="tierlists__new-btn">+ Создать тирлист</a>
+  </div>
+
+  @if (isLoading) {
+    <p>Загрузка...</p>
+  } @else if (lists.length === 0) {
+    <p class="tierlists__empty">У вас пока нет тирлистов.</p>
+  } @else {
+    <div class="tierlists__grid">
+      @for (list of lists; track list.id) {
+        <a [routerLink]="['/tierlists', list.id, 'edit']" class="tierlists__card">
+          <div class="tierlists__card-header">
+            <span class="tierlists__title">{{ list.title }}</span>
+            <button
+              class="tierlists__delete-btn"
+              (click)="deleteList(list.id, $event)"
+              title="Удалить"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-trash2-icon lucide-trash-2"
+              >
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="tierlists__preview">
+            @for (item of list.items.slice(0, 6); track item.anime_id) {
+              @if (getImage(item.anime_id); as img) {
+                <img [src]="img" class="tierlists__preview-img" />
+              } @else {
+                <div class="tierlists__preview-img tierlists__preview-img--placeholder"></div>
+              }
+            }
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

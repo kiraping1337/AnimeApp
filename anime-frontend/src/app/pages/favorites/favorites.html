@@ -1,0 +1,27 @@
+<div class="favorites">
+  <h2 class="section__title">Избранное</h2>
+
+  @if (isLoading) {
+    <div class="skeleton-season-row">
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="skeleton-season-card"></div>
+      }
+    </div>
+  } @else if (favorites.length === 0) {
+    <p class="favorites__empty">Пока пусто. Добавляйте аниме через кнопку на странице тайтла.</p>
+  } @else {
+    <div class="favorites__grid">
+      @for (anime of favorites; track anime.id) {
+        <div class="favorites__card" (click)="goToAnime(anime.url)">
+          <button class="favorites__remove" (click)="removeFavorite(anime.id, $event)">✕</button>
+          @if (anime.image) {
+            <img [src]="anime.image" [alt]="anime.title" class="favorites__img" />
+          } @else {
+            <div class="favorites__img favorites__img--placeholder"></div>
+          }
+          <span class="favorites__title">{{ anime.title }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

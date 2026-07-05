@@ -1,0 +1,73 @@
+.favorites {
+  &__empty {
+    color: var(--cream-dim);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  &__card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:hover {
+      border-color: var(--cream-dim);
+    }
+  }
+
+  &__remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(15, 15, 13, 0.8);
+    color: var(--cream);
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  &__img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+
+    &--placeholder {
+      background: var(--border);
+    }
+  }
+
+  &__title {
+    display: block;
+    padding: 7px 9px;
+    font-size: 13px;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 640px) {
+  .favorites__grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .favorites__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

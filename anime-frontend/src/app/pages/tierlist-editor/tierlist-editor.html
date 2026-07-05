@@ -1,0 +1,132 @@
+<div class="editor">
+  <div class="editor__header">
+    <input class="editor__title-input" [(ngModel)]="title" placeholder="Название тирлиста" />
+
+    <div class="editor__header-actions">
+      <button class="editor__export-btn" (click)="exportAsImage()" [disabled]="isExporting">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          viewBox="0 0 24 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-download-icon lucide-download"
+        >
+          <path d="M12 15V3" />
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <path d="m7 10 5 5 5-5" />
+        </svg>
+        {{ isExporting ? 'Экспорт...' : 'Экспорт в PNG' }}
+      </button>
+      <button class="editor__export-btn" (click)="exportAsJson()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="15"
+          height="15"
+          viewBox="0 0 24 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-file-braces-corner-icon lucide-file-braces-corner"
+        >
+          <path
+            d="M14 22h4a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v6"
+          />
+          <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+          <path d="M5 14a1 1 0 0 0-1 1v2a1 1 0 0 1-1 1 1 1 0 0 1 1 1v2a1 1 0 0 0 1 1" />
+          <path d="M9 22a1 1 0 0 0 1-1v-2a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-2a1 1 0 0 0-1-1" />
+        </svg>
+        Экспорт в JSON
+      </button>
+      @if (isEditMode) {
+        <button class="editor__delete-action-btn" (click)="deleteTierlist()" [disabled]="isSaving">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 21"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-trash2-icon lucide-trash-2"
+          >
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+            <path d="M3 6h18" />
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+          Удалить
+        </button>
+      }
+      <button class="editor__save-btn" (click)="save()" [disabled]="isSaving">
+        {{ isSaving ? 'Сохранение...' : isEditMode ? 'Сохранить изменения' : 'Сохранить' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="editor__tiers" #tiersContainer>
+    @for (tier of tiers; track tier.rank) {
+      <div class="tier-row">
+        <div class="tier-row__label" [style.background]="tier.color">{{ tier.rank }}</div>
+        <div
+          class="tier-row__list"
+          cdkDropList
+          [id]="'tier-' + tier.rank"
+          [cdkDropListData]="tier.items"
+          [cdkDropListConnectedTo]="dropListIds"
+          (cdkDropListDropped)="drop($event)"
+        >
+          @for (anime of tier.items; track anime.id) {
+            <div class="tier-card" cdkDrag [title]="anime.title">
+              @if (anime.image) {
+                <img [src]="anime.image" [alt]="anime.title" />
+              } @else {
+                <div class="tier-card__placeholder">{{ anime.title }}</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="editor__pool">
+    <h3 class="editor__pool-title">Просмотренные аниме</h3>
+
+    @if (isLoadingPool) {
+      <p>Загрузка...</p>
+    } @else {
+      <div
+        class="editor__pool-list"
+        cdkDropList
+        id="pool"
+        [cdkDropListData]="pool"
+        [cdkDropListConnectedTo]="dropListIds"
+        (cdkDropListDropped)="drop($event)"
+      >
+        @for (anime of pool; track anime.id) {
+          <div class="tier-card" cdkDrag [title]="anime.title">
+            @if (anime.image) {
+              <img [src]="anime.image" [alt]="anime.title" />
+            } @else {
+              <div class="tier-card__placeholder">{{ anime.title }}</div>
+            }
+          </div>
+        } @empty {
+          <span class="editor__empty">
+            Нет просмотренных аниме. Отметьте что-то как просмотренное на странице тайтла.
+          </span>
+        }
+      </div>
+    }
+  </div>
+</div>

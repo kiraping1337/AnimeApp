@@ -1,0 +1,158 @@
+.auth-dialog-wrapper {
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+  }
+}
+
+.auth-modal-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.auth-modal {
+  width: 320px;
+  background: var(--container-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  position: relative;
+
+  animation: modalScale 0.2s ease-out;
+
+  &__tabs {
+    display: flex;
+
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+  }
+
+  &__tab {
+    flex: 1;
+    padding: 12px;
+    background: var(--surface);
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--cream-muted);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &.active {
+      color: var(--cream);
+      border-bottom-color: var(--red);
+    }
+  }
+
+  &__body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__input {
+    padding: 9px 12px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--cream);
+    font-size: 14px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--cream-dim);
+    }
+  }
+
+  &__error {
+    color: var(--red-hover);
+    font-size: 13px;
+  }
+
+  &__submit {
+    padding: 10px;
+    background: var(--red);
+    border: none;
+    border-radius: 3px;
+    color: var(--cream);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover:not(:disabled) {
+      background: var(--red-hover);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  &__close {
+    position: absolute;
+
+    top: -36px;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+
+    &:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-modal {
+    width: calc(100vw - 32px);
+    max-width: 320px;
+
+    &__close {
+      top: -32px;
+    }
+  }
+}

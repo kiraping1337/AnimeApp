@@ -1,0 +1,52 @@
+<dialog #authDialog class="auth-dialog-wrapper">
+  <div class="auth-modal-container" (click)="onBackdropClick()">
+    <div class="auth-modal" (click)="$event.stopPropagation()">
+      <button class="auth-modal__close" (click)="close.emit()" aria-label="Закрыть">✕</button>
+      <div class="auth-modal__tabs">
+        <button
+          class="auth-modal__tab"
+          [class.active]="mode === 'login'"
+          (click)="switchMode('login')"
+        >
+          Вход
+        </button>
+        <button
+          class="auth-modal__tab"
+          [class.active]="mode === 'register'"
+          (click)="switchMode('register')"
+        >
+          Регистрация
+        </button>
+      </div>
+
+      <div class="auth-modal__body">
+        <input class="auth-modal__input" [(ngModel)]="username" placeholder="Имя пользователя" />
+        <input
+          class="auth-modal__input"
+          type="password"
+          [(ngModel)]="password"
+          placeholder="Пароль"
+          minlength="6"
+        />
+
+        @if (mode === 'register') {
+          <input
+            class="auth-modal__input"
+            type="password"
+            [(ngModel)]="confirmPassword"
+            placeholder="Повторите пароль"
+            minlength="6"
+          />
+        }
+
+        @if (error) {
+          <span class="auth-modal__error">{{ error }}</span>
+        }
+
+        <button class="auth-modal__submit" (click)="submit()" [disabled]="isLoading">
+          {{ isLoading ? 'Подождите...' : mode === 'login' ? 'Войти' : 'Зарегистрироваться' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
