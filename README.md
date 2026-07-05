@@ -1,7 +1,6 @@
-<p align="center">
-  <img src="img/logo.png" width="40" alt="YoruGate Logo" style="vertical-align: middle;">
-  <span style="font-size: 2em; font-weight: bold; margin-left: 10px; vertical-align: middle;">YoruGate</span>
-</p>
+<h2 align="center" style="line-height: 40px;">
+  <img src="img/logo.png" height="32" width="32" alt="YoruGate Logo" style="vertical-align: middle;"> YoruGate
+</h2>
 
 <p align="center">
   <b>Платформа для поиска и просмотра аниме, управления коллекцией и создания собственных тирлистов.</b>
