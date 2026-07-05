@@ -128,8 +128,8 @@ AnimeApp
 ### Клонируйте репозиторий
 
 ```bash
-git clone https://github.com/kiraping1337/REPOSITORY.git
-cd REPOSITORY
+git clone https://github.com/kiraping1337/AnimeApp.git
+cd AnimeApp
 ```
 
 ### Backend
