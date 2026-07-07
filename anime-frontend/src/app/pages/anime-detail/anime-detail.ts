@@ -116,7 +116,13 @@ export class AnimeDetail implements OnInit {
     this.isFavorite = !this.isFavorite;
     this.cdr.markForCheck();
     this.userAnime
-      .updateInteraction({ anime_id: this.animeId, is_favorite: this.isFavorite })
+      .updateInteraction({
+        anime_id: this.animeId,
+        is_favorite: this.isFavorite,
+        title: this.info?.title || '',
+        image: this.info?.image || '',
+        url: this.animeUrl,
+      })
       .subscribe();
   }
 
@@ -125,7 +131,13 @@ export class AnimeDetail implements OnInit {
     this.isWatched = !this.isWatched;
     this.cdr.markForCheck();
     this.userAnime
-      .updateInteraction({ anime_id: this.animeId, is_watched: this.isWatched })
+      .updateInteraction({
+        anime_id: this.animeId,
+        is_watched: this.isWatched,
+        title: this.info?.title || '',
+        image: this.info?.image || '',
+        url: this.animeUrl,
+      })
       .subscribe();
   }
 

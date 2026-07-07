@@ -40,7 +40,13 @@ class TierListItem(Base):
     anime_id = Column(String(50), nullable=False)
     rank = Column(String(10), nullable=False)
     position = Column(Integer, nullable=True)
-
+    
+class AnimeMetadata(Base):
+    __tablename__ = "anime_metadata"
+    anime_id = Column(String(50), primary_key=True)
+    title = Column(String(255))
+    image = Column(String(500))
+    url = Column(String(500))
 
 #КЛАССЫ ВНЕШНЕГО API
 

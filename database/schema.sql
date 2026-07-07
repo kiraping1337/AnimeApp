@@ -25,3 +25,9 @@ CREATE TABLE tier_list_items (
     rank VARCHAR(10) NOT NULL, 
     position INTEGER 
 );
+CREATE TABLE anime_metadata (
+    anime_id VARCHAR(50) PRIMARY KEY,
+    title VARCHAR(255),
+    image TEXT,
+    url TEXT
+);

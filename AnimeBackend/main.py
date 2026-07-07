@@ -30,6 +30,7 @@ from config import HOST, PORT, DEBUG, engine, Base, SessionLocal, SECRET_KEY, AL
 import schemas
 from models import (
     AnimeInfo,
+    AnimeMetadata,
     AnimeUpdate,
     CVHStreamResponse,
     EpisodeInfo,
@@ -277,13 +278,28 @@ def refresh_token(refresh_token: str = Header(..., alias="refresh-token"), db: S
     }
 
 
-#избранное\просмотренное
+#избранное просмотренное
 @app.post("/anime/interaction")
 def update_anime_interaction(
     interaction: schemas.AnimeInteractionUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    if interaction.title or interaction.image or interaction.url:
+        meta = db.query(AnimeMetadata).filter(AnimeMetadata.anime_id == interaction.anime_id).first()
+        if not meta:
+            meta = AnimeMetadata(
+                anime_id=interaction.anime_id,
+                title=interaction.title or f"Аниме #{interaction.anime_id}",
+                image=interaction.image or "",
+                url=interaction.url or ""
+            )
+            db.add(meta)
+        else:
+            if interaction.title: meta.title = interaction.title
+            if interaction.image: meta.image = interaction.image
+            if interaction.url: meta.url = interaction.url
+
     db_interaction = db.query(UserAnimeInteraction).filter(
         UserAnimeInteraction.user_id == current_user.id,
         UserAnimeInteraction.anime_id == interaction.anime_id
@@ -306,23 +322,50 @@ def update_anime_interaction(
     db.commit()
     return {"status": "Взаимодействие обновлено"}
 
-
-#список ID избранных аниме пользователя
-@app.get("/anime/favorites")
+#список избранных аниме пользователя (теперь отдает объекты, а не ID)
+@app.get("/anime/favorites", response_model=List[schemas.AnimeMetaResponse])
 def get_favorites(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    favorites = db.query(UserAnimeInteraction).filter(
+    favorites = db.query(UserAnimeInteraction, AnimeMetadata).outerjoin(
+        AnimeMetadata, UserAnimeInteraction.anime_id == AnimeMetadata.anime_id
+    ).filter(
         UserAnimeInteraction.user_id == current_user.id,
         UserAnimeInteraction.is_favorite == True
     ).all()
-    return [item.anime_id for item in favorites]
 
+    return [
+        {
+            "id": inter.anime_id,
+            "title": meta.title if meta else f"Аниме #{inter.anime_id}",
+            "image": meta.image if meta else "",
+            "url": meta.url if meta else ""
+        } for inter, meta in favorites
+    ]
+
+# список просмотренных аниме (нужен, чтобы строить тирлист)
+@app.get("/anime/watched", response_model=List[schemas.AnimeMetaResponse])
+def get_watched(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    watched = db.query(UserAnimeInteraction, AnimeMetadata).outerjoin(
+        AnimeMetadata, UserAnimeInteraction.anime_id == AnimeMetadata.anime_id
+    ).filter(
+        UserAnimeInteraction.user_id == current_user.id,
+        UserAnimeInteraction.is_watched == True
+    ).all()
+
+    return [
+        {
+            "id": inter.anime_id,
+            "title": meta.title if meta else f"Аниме #{inter.anime_id}",
+            "image": meta.image if meta else "",
+            "url": meta.url if meta else ""
+        } for inter, meta in watched
+    ]
 
 #тирлисты
 @app.post("/tierlists")
 def save_tier_list(
-        tl_data: schemas.TierListCreate,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
+    tl_data: schemas.TierListCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     new_tl = TierList(user_id=current_user.id, title=tl_data.title)
     db.add(new_tl)
@@ -337,61 +380,64 @@ def save_tier_list(
             position=item.position
         )
         db.add(db_item)
-
     db.commit()
     return {"message": "Тирлист успешно создан", "tierlist_id": new_tl.id}
 
-
 @app.get("/tierlists", response_model=List[schemas.TierListResponse])
-def get_my_tier_lists(
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
-):
-
+def get_my_tier_lists(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_lists = db.query(TierList).filter(TierList.user_id == current_user.id).all()
-
     result = []
     for tl in user_lists:
-        items = db.query(TierListItem).filter(TierListItem.tier_list_id == tl.id).order_by(
-            TierListItem.position).all()
-
+        items = db.query(TierListItem, AnimeMetadata).outerjoin(
+            AnimeMetadata, TierListItem.anime_id == AnimeMetadata.anime_id
+        ).filter(TierListItem.tier_list_id == tl.id).order_by(TierListItem.position).all()
+        
         result.append({
             "id": tl.id,
             "title": tl.title,
             "items": [
-                {"anime_id": i.anime_id, "rank": i.rank, "position": i.position}
-                for i in items
+                {
+                    "anime_id": i.TierListItem.anime_id,
+                    "rank": i.TierListItem.rank,
+                    "position": i.TierListItem.position,
+                    "meta": {
+                        "id": i.TierListItem.anime_id,
+                        "title": i.AnimeMetadata.title if i.AnimeMetadata else f"Аниме #{i.TierListItem.anime_id}",
+                        "image": i.AnimeMetadata.image if i.AnimeMetadata else "",
+                        "url": i.AnimeMetadata.url if i.AnimeMetadata else ""
+                    }
+                } for i in items
             ]
         })
-
     return result
 
 @app.get("/tierlists/{tierlist_id}", response_model=schemas.TierListResponse)
-def get_tier_list(
-    tierlist_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    tl = db.query(TierList).filter(
-        TierList.id == tierlist_id,
-        TierList.user_id == current_user.id
-    ).first()
+def get_tier_list(tierlist_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tl = db.query(TierList).filter(TierList.id == tierlist_id, TierList.user_id == current_user.id).first()
     if not tl:
         raise HTTPException(status_code=404, detail="Тирлист не найден")
 
-    items = db.query(TierListItem).filter(
-        TierListItem.tier_list_id == tl.id
-    ).order_by(TierListItem.position).all()
+    items = db.query(TierListItem, AnimeMetadata).outerjoin(
+        AnimeMetadata, TierListItem.anime_id == AnimeMetadata.anime_id
+    ).filter(TierListItem.tier_list_id == tl.id).order_by(TierListItem.position).all()
 
     return {
         "id": tl.id,
         "title": tl.title,
         "items": [
-            {"anime_id": i.anime_id, "rank": i.rank, "position": i.position}
-            for i in items
+            {
+                "anime_id": i.TierListItem.anime_id,
+                "rank": i.TierListItem.rank,
+                "position": i.TierListItem.position,
+                "meta": {
+                    "id": i.TierListItem.anime_id,
+                    "title": i.AnimeMetadata.title if i.AnimeMetadata else f"Аниме #{i.TierListItem.anime_id}",
+                    "image": i.AnimeMetadata.image if i.AnimeMetadata else "",
+                    "url": i.AnimeMetadata.url if i.AnimeMetadata else ""
+                }
+            } for i in items
         ]
     }
-
 
 @app.put("/tierlists/{tierlist_id}")
 def update_tier_list(
@@ -400,10 +446,7 @@ def update_tier_list(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    tl = db.query(TierList).filter(
-        TierList.id == tierlist_id,
-        TierList.user_id == current_user.id
-    ).first()
+    tl = db.query(TierList).filter(TierList.id == tierlist_id, TierList.user_id == current_user.id).first()
     if not tl:
         raise HTTPException(status_code=404, detail="Тирлист не найден")
 
@@ -415,25 +458,15 @@ def update_tier_list(
             tier_list_id=tl.id,
             anime_id=item.anime_id,
             rank=item.rank,
-            position=item.position,
+            position=item.position
         )
         db.add(db_item)
-
     db.commit()
     return {"message": "Тирлист обновлён"}
 
-
 @app.delete("/tierlists/{tierlist_id}", status_code=status.HTTP_200_OK)
-def delete_tier_list(
-        tierlist_id: int,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(get_current_user)
-):
-    tl = db.query(TierList).filter(
-        TierList.id == tierlist_id,
-        TierList.user_id == current_user.id
-    ).first()
-
+def delete_tier_list(tierlist_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tl = db.query(TierList).filter(TierList.id == tierlist_id, TierList.user_id == current_user.id).first()
     if not tl:
         raise HTTPException(status_code=404, detail="Тирлист не найден")
 
@@ -443,31 +476,15 @@ def delete_tier_list(
 
 # состояние конкретного аниме для текущего пользователя (для кнопок на странице тайтла)
 @app.get("/anime/interaction/{anime_id}")
-def get_interaction(
-    anime_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def get_interaction(anime_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     interaction = db.query(UserAnimeInteraction).filter(
         UserAnimeInteraction.user_id == current_user.id,
-        UserAnimeInteraction.anime_id == anime_id,
+        UserAnimeInteraction.anime_id == anime_id
     ).first()
+    
     if not interaction:
         return {"is_favorite": False, "is_watched": False}
     return {"is_favorite": interaction.is_favorite, "is_watched": interaction.is_watched}
-
-
-# список ID просмотренных аниме (нужен, чтобы строить тирлист)
-@app.get("/anime/watched")
-def get_watched(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    watched = db.query(UserAnimeInteraction).filter(
-        UserAnimeInteraction.user_id == current_user.id,
-        UserAnimeInteraction.is_watched == True,
-    ).all()
-    return [item.anime_id for item in watched]
 
 #ЭНДПОИНТЫ ПАРСЕРА ANIMEGO
 #корневой эндпоинт

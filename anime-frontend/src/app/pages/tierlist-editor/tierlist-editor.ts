@@ -74,11 +74,7 @@ export class TierlistEditor implements OnInit {
 
   private loadData(): void {
     this.userAnime.getWatched().subscribe({
-      next: (ids) => {
-        const watchedMetas = ids.map(
-          (id) => this.metaCache.get(id) ?? { id, title: `Аниме #${id}`, image: '', url: '' },
-        );
-
+      next: (watchedMetas) => {
         if (this.isEditMode && this.tierlistId) {
           this.tierlistService.getById(this.tierlistId).subscribe({
             next: (data) => {
@@ -89,7 +85,7 @@ export class TierlistEditor implements OnInit {
                 .sort((a, b) => a.position - b.position)
                 .forEach((item) => {
                   const tier = this.tiers.find((t) => t.rank === item.rank);
-                  const meta = this.metaCache.get(item.anime_id) ??
+                  const meta = item.meta ??
                     watchedMetas.find((m) => m.id === item.anime_id) ?? {
                       id: item.anime_id,
                       title: `Аниме #${item.anime_id}`,

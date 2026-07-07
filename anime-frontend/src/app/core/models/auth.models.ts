@@ -18,12 +18,16 @@ export interface AnimeInteractionUpdate {
   anime_id: string;
   is_favorite?: boolean;
   is_watched?: boolean;
+  title?: string;
+  image?: string;
+  url?: string;
 }
 
 export interface TierListItemSchema {
   anime_id: string;
   rank: string;
   position: number;
+  meta?: AnimeMeta;
 }
 
 export interface TierListCreate {

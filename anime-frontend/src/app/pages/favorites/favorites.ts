@@ -26,10 +26,8 @@ export class Favorites implements OnInit {
 
   ngOnInit(): void {
     this.userAnime.getFavorites().subscribe({
-      next: (ids) => {
-        this.favorites = ids.map(
-          (id) => this.metaCache.get(id) ?? { id, title: `Аниме #${id}`, image: '', url: '' },
-        );
+      next: (metas) => {
+        this.favorites = metas;
         this.isLoading = false;
         this.cdr.markForCheck();
       },

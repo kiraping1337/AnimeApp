@@ -55,6 +55,12 @@ export class Tierlists implements OnInit {
   }
 
   getImage(animeId: string): string | null {
+    for (const list of this.lists) {
+      const item = list.items.find((i) => i.anime_id === animeId);
+      if (item?.meta?.image) {
+        return item.meta.image;
+      }
+    }
     return this.metaCache.get(animeId)?.image || null;
   }
 }
